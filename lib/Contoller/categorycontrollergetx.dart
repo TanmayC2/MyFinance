@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_finance1/Model/categorymodelgetx.dart';
 import 'package:my_finance1/customwidget.dart';
-import 'package:my_finance1/Contoller/databaseconn/dbhelper.dart';
 
 class CategoryController extends GetxController {
   RxList<CategoryModal> categoryList = <CategoryModal>[].obs;
@@ -252,62 +251,3 @@ class CategoryController extends GetxController {
     }
   }
 }
-
-// //SQFLITE OPERATIONS Related to Categories
-
-// class CategoryControllerSQ extends GetxController {
-//   final RxList<CategorySQ> categoriesSQ = <CategorySQ>[].obs;
-
-//   // Selected category tracking (optional, similar to selectedType)
-//   Rx<String> selectedCategoryName = ''.obs;
-
-//   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
-
-//   setSelectedCategory(String categoryName) {
-//     selectedCategoryName.value = categoryName;
-//     update();
-//     return selectedCategoryName.value;
-//   }
-
-//   bool isCategorySelected(String categoryName) {
-//     return selectedCategoryName.value == categoryName;
-//   }
-
-//   // Fetch all categories
-//   Future<void> fetchCategories() async {
-//     try {
-//       final fetchedCategories = await _dbHelper.getCategoriesSQ();
-
-//       categoriesSQ.assignAll(fetchedCategories);
-//     } catch (e) {
-//       log('Error fetching categories: $e');
-//       categoriesSQ.clear();
-//     }
-//   }
-
-//   // Add new category
-//   Future<void> addCategory(CategorySQ category) async {
-//     try {
-//       await _dbHelper.insertCategorySQ(category);
-//       await fetchCategories();
-//     } catch (e) {
-//       log('Error adding category: $e');
-//     }
-//   }
-
-//   // Delete category
-//   Future<void> deleteCategory(String firebaseid) async {
-//     try {
-//       await _dbHelper.deleteCategorySQ(firebaseid);
-//       await fetchCategories();
-//     } catch (e) {
-//       log('Error deleting category: $e');
-//     }
-//   }
-
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     fetchCategories();
-//   }
-// }

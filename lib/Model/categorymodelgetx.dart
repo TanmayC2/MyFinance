@@ -19,6 +19,8 @@ class CategoryModal {
     required this.categoryImageUrl,
   });
 
+  get type => null;
+
   @override
   String toString() {
     return 'CategoryModal{id: $id, name: $name, color: $color,categoryImageUrl:$categoryImageUrl,categoryId:$categoryId,viewCount:$viewCount}';

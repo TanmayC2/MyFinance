@@ -1,136 +1,254 @@
-import 'dart:async';
-import 'dart:developer';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:get/get.dart';
-import 'package:my_finance1/View/transactiongetx.dart';
+// import 'dart:async';
+// import 'dart:developer';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:my_finance1/View/transactiongetx.dart';
 
-class PhoneAuthController extends GetxController {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  RxString verificationId = ''.obs;
-  RxBool isCodeSent = false.obs;
-  RxInt resendToken = 0.obs;
-  RxString countryCode = '+91'.obs;
-  RxString phoneNumber = ''.obs;
-  // In your PhoneAuthController
-  final List<TextEditingController> otpControllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
+// class PhoneAuthController extends GetxController {
+//   final FirebaseAuth _auth = FirebaseAuth.instance;
+//   RxString verificationId = ''.obs;
+//   RxBool isCodeSent = false.obs;
+//   RxInt resendToken = 0.obs;
+//   RxString countryCode = '+91'.obs;
+//   RxString phoneNumber = ''.obs;
+//   Timer? _resendTimer;
 
-  Future<void> linkPhoneNumber(String phoneNumber) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
+//   // Controllers for OTP input fields
+//   final List<TextEditingController> otpControllers = List.generate(
+//     6,
+//     (_) => TextEditingController(),
+//   );
 
-      // First verify the phone number
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await user!.linkWithCredential(credential);
-          log('Phone number linked automatically');
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          log('Verification failed: ${e.message}');
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          // Store verificationId and show SMS code input dialog
-          _showSmsCodeDialog(verificationId);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } catch (e) {
-      log('Error linking phone number: $e');
-    }
-  }
+//   // Focus nodes for OTP input fields
+//   final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
 
-  // Helper to show SMS code input dialog
-  void _showSmsCodeDialog(String verificationId) {
-    // Implement dialog to get SMS code from user
-  }
-  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
-  final otpDigits = List<String>.filled(6, '').obs;
-  final isVerifying = false.obs;
-  final canResend = false.obs;
-  final resendCountdown = 30.obs;
+//   // Observable OTP digits array
+//   final otpDigits = List<String>.filled(6, '').obs;
 
-  void updateOtpDigit(int index, String value) {
-    otpDigits[index] = value;
-  }
+//   // Loading states
+//   final isVerifying = false.obs;
+//   final canResend = false.obs;
+//   final resendCountdown = 30.obs;
 
-  void startResendTimer() {
-    canResend.value = false;
-    resendCountdown.value = 30;
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (resendCountdown.value > 0) {
-        resendCountdown.value--;
-      } else {
-        canResend.value = true;
-        timer.cancel();
-      }
-    });
-  }
+//   @override
+//   void onInit() {
+//     super.onInit();
+//     // Initialize with resend disabled and start countdown
+//     startResendTimer();
+//   }
 
-  // Send OTP to phone number
+//   @override
+//   void onClose() {
+//     // Clean up controllers and focus nodes
+//     for (var controller in otpControllers) {
+//       controller.dispose();
+//     }
+//     for (var node in focusNodes) {
+//       node.dispose();
+//     }
+//     _resendTimer?.cancel();
+//     super.onClose();
+//   }
 
-  // Future<void> sendOTP() async {
-  //   try {
-  //     final fullPhoneNumber = '${countryCode.value}${phoneNumber.value}';
+//   void sendOTP() {
+//     FirebaseAuth.instance.verifyPhoneNumber(
+//       verificationCompleted: (PhoneAuthCredential credential) {},
+//       verificationFailed: (FirebaseAuthException ex) {},
+//       codeSent: (String verificationId1, int? resendToken) {
+//         verificationId.value = verificationId1;
+//       },
+//       codeAutoRetrievalTimeout: (String verificationId) {
+//         log('Auto retrieval timeout');
+//       },
+//       phoneNumber: phoneNumber.value,
+//     );
+//     log(phoneNumber.value);
+//   }
 
-  //     await _auth.verifyPhoneNumber(
-  //       phoneNumber: fullPhoneNumber,
-  //       verificationCompleted: (PhoneAuthCredential credential) async {
-  //         await _auth.signInWithCredential(credential);
-  //         Get.back();
-  //         Get.snackbar('Success', 'Auto verified!');
-  //       },
-  //       verificationFailed: (FirebaseAuthException e) {
-  //         Get.snackbar('Error', e.message ?? 'Verification failed');
-  //       },
-  //       codeSent: (String vId, int? resendToken) {
-  //         verificationId.value = vId;
-  //         Get.toNamed('/verify-otp', arguments: fullPhoneNumber);
-  //       },
-  //       codeAutoRetrievalTimeout: (String vId) {
-  //         verificationId.value = vId;
-  //       },
-  //       timeout: const Duration(seconds: 60),
-  //     );
-  //   } catch (e) {
-  //     Get.snackbar('Error', e.toString());
-  //   }
-  // }
+//   // Initialize verification process for a new phone number
+//   Future<void> initPhoneVerification(
+//     String phoneNumber, {
+//     bool isResend = false,
+//   }) async {
+//     try {
+//       final fullPhoneNumber = '$countryCode$phoneNumber';
+//       log('Initiating verification for $fullPhoneNumber');
 
-  // Verify entered OTP
-  Future<void> verifyOTP(String smsCode) async {
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationId.value,
-        smsCode: smsCode,
-      );
-      await _auth.signInWithCredential(credential);
+//       isVerifying.value = true;
 
-      Get.to(() => Transaction()); // Navigate to home after verification
-      Get.snackbar('Success', 'Phone number verified');
-    } catch (e) {
-      Get.snackbar('Error', 'Invalid OTP');
-    }
-  }
+//       await _auth.verifyPhoneNumber(
+//         phoneNumber: fullPhoneNumber,
+//         timeout: const Duration(seconds: 60),
+//         forceResendingToken: isResend ? resendToken.value : null,
+//         verificationCompleted: (PhoneAuthCredential credential) async {
+//           log('Auto verification completed');
+//           await _signInWithCredential(credential);
+//         },
+//         verificationFailed: (FirebaseAuthException e) {
+//           log('Verification failed: ${e.message}');
+//           Get.snackbar(
+//             'Verification Failed',
+//             e.message ?? 'An error occurred during verification',
+//             snackPosition: SnackPosition.BOTTOM,
+//             backgroundColor: Colors.red,
+//             colorText: Colors.white,
+//             duration: const Duration(seconds: 5),
+//           );
+//           isVerifying.value = false;
+//         },
+//         codeSent: (String vId, int? token) {
+//           log('Verification code sent. Token: $token');
+//           verificationId.value = vId;
+//           if (token != null) resendToken.value = token;
+//           isCodeSent.value = true;
+//           isVerifying.value = false;
 
-  // Resend OTP
-  Future<void> resendOTP(String phoneNumber) async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      forceResendingToken: resendToken.value,
-      verificationCompleted: (_) {},
-      verificationFailed: (e) {
-        Get.snackbar('Error', e.message ?? 'Resend failed');
-      },
-      codeSent: (String vId, int? token) {
-        verificationId.value = vId;
-        resendToken.value = token ?? 0;
-        Get.snackbar('Success', 'OTP resent');
-      },
-      codeAutoRetrievalTimeout: (_) {},
-    );
-  }
-}
+//           if (!isResend) {
+//             // Only show this message on initial send, not resend
+//             Get.snackbar(
+//               'Code Sent',
+//               'Verification code sent to $fullPhoneNumber',
+//               snackPosition: SnackPosition.BOTTOM,
+//               backgroundColor: Colors.green,
+//               colorText: Colors.white,
+//             );
+//           }
+
+//           // Start the resend timer
+//           startResendTimer();
+//         },
+//         codeAutoRetrievalTimeout: (String vId) {
+//           log('Auto retrieval timeout');
+//           verificationId.value = vId;
+//         },
+//       );
+//     } catch (e) {
+//       log('Error in phone verification: $e');
+//       isVerifying.value = false;
+//       Get.snackbar(
+//         'Error',
+//         'Failed to send verification code: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//     }
+//   }
+
+//   // Update OTP digit at specified index
+//   void updateOtpDigit(int index, String value) {
+//     otpDigits[index] = value;
+//     update(); // Trigger UI update
+//   }
+
+//   // Start countdown timer for OTP resend
+//   void startResendTimer() {
+//     canResend.value = false;
+//     resendCountdown.value = 30;
+
+//     // Cancel existing timer if any
+//     _resendTimer?.cancel();
+
+//     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+//       if (resendCountdown.value > 0) {
+//         resendCountdown.value--;
+//       } else {
+//         canResend.value = true;
+//         timer.cancel();
+//       }
+//     });
+//   }
+
+//   // Verify entered OTP
+//   Future<void> verifyOTP(String smsCode) async {
+//     if (verificationId.value.isEmpty) {
+//       Get.snackbar(
+//         'Error',
+//         'Verification ID is missing. Please try again.',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//       return;
+//     }
+
+//     try {
+//       isVerifying.value = true;
+
+//       PhoneAuthCredential credential = PhoneAuthProvider.credential(
+//         verificationId: verificationId.value,
+//         smsCode: smsCode,
+//       );
+
+//       await _signInWithCredential(credential);
+//     } catch (e) {
+//       log('OTP verification failed: $e');
+//       isVerifying.value = false;
+//       Get.snackbar(
+//         'Invalid Code',
+//         'The verification code entered is invalid. Please try again.',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//     }
+//   }
+
+//   // Sign in with phone credential
+//   Future<void> _signInWithCredential(PhoneAuthCredential credential) async {
+//     try {
+//       final userCredential = await _auth.signInWithCredential(credential);
+//       isVerifying.value = false;
+
+//       if (userCredential.user != null) {
+//         Get.offAll(() => Transaction()); // Navigate and remove previous screens
+//         Get.snackbar(
+//           'Success',
+//           'Phone number verified successfully',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.green,
+//           colorText: Colors.white,
+//         );
+//       }
+//     } catch (e) {
+//       isVerifying.value = false;
+//       log('Sign in failed: $e');
+//       Get.snackbar(
+//         'Authentication Failed',
+//         'Failed to verify your identity. Please try again.',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//     }
+//   }
+
+//   // Resend OTP
+//   Future<void> resendOTP(String phoneNumber) async {
+//     if (!canResend.value) return;
+
+//     Get.snackbar(
+//       'Resending',
+//       'Sending a new verification code...',
+//       snackPosition: SnackPosition.BOTTOM,
+//       backgroundColor: Colors.blue,
+//       colorText: Colors.white,
+//       duration: const Duration(seconds: 2),
+//     );
+
+//     // Clear existing OTP fields
+//     for (var controller in otpControllers) {
+//       controller.clear();
+//     }
+//     otpDigits.value = List<String>.filled(6, '');
+
+//     // Set focus to first field
+//     if (focusNodes.isNotEmpty) {
+//       focusNodes[0].requestFocus();
+//     }
+
+//     // Resend verification code
+//     await initPhoneVerification(phoneNumber, isResend: true);
+//   }
+// }

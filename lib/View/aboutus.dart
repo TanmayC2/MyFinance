@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_finance1/Contoller/SessionData.dart';
+import 'package:my_finance1/View/drawer.dart';
 import 'package:my_finance1/View/login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -69,6 +70,7 @@ class _AboutUsPageState extends State<AboutUsPage>
         backgroundColor: Colors.green,
         elevation: 0, // Remove shadow
       ),
+      drawer: CustomDrawer(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -355,7 +357,7 @@ class _AboutUsPageState extends State<AboutUsPage>
                   SizedBox(height: 40),
 
                   // Logout Button
-                  Container(
+                  SizedBox(
                     width: 200,
                     height: 50,
                     child: ElevatedButton(
