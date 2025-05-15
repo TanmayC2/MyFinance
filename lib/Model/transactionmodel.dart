@@ -2,7 +2,6 @@ import 'dart:developer' show log;
 
 class UserTransaction {
   int? transactionid;
-  int? userId;
   String title;
   String amount;
   String transactiontype;
@@ -12,7 +11,6 @@ class UserTransaction {
 
   UserTransaction({
     this.transactionid,
-    this.userId,
     this.categoryImageUrl,
     required this.title,
     required this.amount,
@@ -25,7 +23,6 @@ class UserTransaction {
   Map<String, dynamic> toMap() {
     log("in Model");
     return {
-      'userId': userId,
       'transactionid': transactionid,
       'title': title,
       'categoryImageUrl': categoryImageUrl,
@@ -48,6 +45,6 @@ class UserTransaction {
   // Override toString for debugging
   @override
   String toString() {
-    return 'UserTransaction(id: $transactionid, userId : $userId,title: $title, amount: $amount, type: $transactiontype, category: $categoryId, date: $date,categoryImageUrl:$categoryImageUrl)';
+    return 'UserTransaction(id: $transactionid, title: $title, amount: $amount, type: $transactiontype, category: $categoryId, date: $date,categoryImageUrl:$categoryImageUrl)';
   }
 }

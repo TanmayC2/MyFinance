@@ -1,8 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:my_finance1/Contoller/SessionData.dart';
-import 'package:my_finance1/Contoller/transactioncontroolergetx.dart';
 import 'package:my_finance1/View/onboarding.dart';
 import 'package:my_finance1/View/transactiongetx.dart';
 //import 'package:my_finance1/View/onboarding.dart'; // Import onboarding screen
@@ -18,7 +16,6 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  final TransactionController _controller = Get.put(TransactionController());
   @override
   void initState() {
     super.initState();
@@ -44,17 +41,21 @@ class _SplashState extends State<Splash> {
       if (SessionData.isLogin == true) {
         // User is logged in, navigate to transaction screen
         log("NAVIGATE TO HOME");
-        _controller.getuserId();
-        _controller.fetchTransactions(_controller.userId.value);
-        Get.to(() => Transaction());
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Transaction()),
+        );
       } else if (onboardingCompleted) {
         // Onboarding was completed but not logged in, go to login
         log("NAVIGATE TO LOGIN");
-        Get.to(() => Login());
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Login()),
+        );
       } else {
         // First time or app reinstalled, show onboarding
         log("NAVIGATE TO ONBOARDING");
-        Get.to(() => OnBoardingScreen1());
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const OnBoardingScreen1()),
+        );
       }
     }
   }

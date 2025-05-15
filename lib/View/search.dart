@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:my_finance1/Contoller/transactioncontroolergetx.dart';
 import 'package:my_finance1/Model/transactionmodel.dart';
 

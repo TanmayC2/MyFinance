@@ -2,7 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:my_finance1/Contoller/SessionData.dart';
+import 'package:my_finance1/View/mobileno.dart';
 import 'package:my_finance1/View/splashscreen.dart';
+import 'package:my_finance1/View/verificationOTP.dart';
+import 'package:my_finance1/View/verificationemail.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +21,7 @@ class MainApp extends StatelessWidget {
     SessionData.initialize();
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(body: Splash()),
+      home: Scaffold(body: PhoneNumberScreen()),
     );
   }
 }

@@ -1,11 +1,10 @@
+//verifying email is authentic or not
 import 'dart:async';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_finance1/Contoller/SessionData.dart';
-import 'package:my_finance1/Contoller/transactioncontroolergetx.dart';
-import 'package:my_finance1/Contoller/verificationEmailController.dart';
 import 'package:my_finance1/View/transactiongetx.dart';
 import 'package:my_finance1/customwidget.dart';
 
@@ -31,80 +30,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
   final RxInt _secondsRemaining = 60.obs;
   final RxBool _isResendEnabled = false.obs;
   final RxBool _isEmailVerified = false.obs;
-  final RxBool _isUserAlreadyLoggedIn = false.obs;
-  final TransactionController _controller = Get.put(TransactionController());
 
   @override
   void initState() {
     super.initState();
     _user = _auth.currentUser;
-    _checkUserLoginStatus();
+    _checkEmailVerification();
+    sendverification();
+    _startTimer();
   }
 
-  // Check if user is already logged in and verified
-  Future<void> _checkUserLoginStatus() async {
-    await _user?.reload();
-    _user = _auth.currentUser;
-
-    if (_user != null) {
-      if (_user!.emailVerified) {
-        _isEmailVerified.value = true;
-        _isUserAlreadyLoggedIn.value = true;
-        // Navigate to home page after a short delay
-
-        _controller.getuserId();
-        _controller.fetchTransactions(_controller.userId.value);
-        Get.to(() => Transaction());
-      } else {
-        // User exists but email is not verified, send verification
-        _checkEmailVerification();
-        sendVerification();
-        _startTimer();
-      }
-    } else {
-      // User is not logged in yet
-      try {
-        // Try to sign in with provided credentials
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: widget.email,
-          password: widget.password,
-        );
-
-        _user = userCredential.user;
-
-        if (_user != null && _user!.emailVerified) {
-          // User is already verified
-          _isEmailVerified.value = true;
-          _isUserAlreadyLoggedIn.value = true;
-
-          // Store session data
-          await SessionData.storeSessionData(
-            loginData: true,
-            emailId: _user!.email!,
-          );
-
-          // Navigate to transaction screen
-
-          _controller.getuserId();
-          _controller.fetchTransactions(_controller.userId.value);
-          Get.to(() => Transaction());
-        } else {
-          // User exists but email is not verified, send verification
-          _checkEmailVerification();
-          sendVerification();
-          _startTimer();
-        }
-      } catch (e) {
-        log("MY FINANCE: Error signing in: $e");
-        // Unable to sign in, might be a new user or incorrect credentials
-        _checkEmailVerification();
-        sendVerification();
-        _startTimer();
-      }
-    }
-  }
-
-  void sendVerification() {
+  void sendverification() {
     _sendVerificationEmail();
   }
 
@@ -115,14 +51,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     if (_user != null && _user!.emailVerified) {
       _isEmailVerified.value = true;
-      if (_timer.isActive) {
-        _timer.cancel();
-      }
-      _controller.getuserId();
-      _controller.fetchTransactions(_controller.userId.value);
+      _timer.cancel();
       // Navigate to home page or next screen after verification
-
-      Get.to(() => Transaction()); // Replace with your route
+      Future.delayed(Duration(seconds: 1), () {
+        Get.to(Transaction()); // Replace with your route
+      });
     }
   }
 
@@ -130,36 +63,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _sendVerificationEmail() async {
     try {
       final user = _auth.currentUser;
-
-      if (user == null) {
-        Get.snackbar(
-          'Error',
-          'User not found. Please try signing in again.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      if (user.emailVerified) {
-        _isEmailVerified.value = true;
-        Get.snackbar(
-          'Already Verified',
-          'Your email is already verified!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: Duration(seconds: 3),
-        );
-        return;
-      }
-
-      await user.sendEmailVerification();
+      await user?.sendEmailVerification();
 
       Get.snackbar(
         'Email Sent',
-        'Verification email has been sent to ${user.email}',
+        'Verification email has been sent to ${user?.email}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
@@ -199,9 +107,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   void dispose() {
-    if (this._timer != null && this._timer.isActive) {
-      _timer.cancel();
-    }
+    _timer.cancel();
     super.dispose();
   }
 
@@ -274,13 +180,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
               SizedBox(height: screenHeight * 0.04),
               Center(
                 child: SizedBox(
-                  width: screenWidth * 0.6,
+                  width: screenWidth * 0.7,
                   child: Image.network(
                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfCliqXktdGYOUPMBUaBETMvRDEFkRB1MqmA&s", // If you don't have this asset, you can use a placeholder
                     // or create an empty container with proper dimensions
                     errorBuilder:
                         (context, error, stackTrace) => Container(
-                          height: screenHeight * 0.20,
+                          height: screenHeight * 0.25,
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(12),
@@ -288,7 +194,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           child: Center(
                             child: Icon(
                               Icons.email_outlined,
-                              size: 60,
+                              size: 80,
                               color: Colors.grey[400],
                             ),
                           ),
@@ -352,41 +258,38 @@ class _VerificationScreenState extends State<VerificationScreen> {
               ),
               SizedBox(height: screenHeight * 0.03),
               Center(
-                child: Obx(
-                  () =>
-                      _isUserAlreadyLoggedIn.value
-                          ? Container() // Hide resend controls if already logged in
-                          : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Didn\'t receive the email? ',
-                                style: TextStyle(
-                                  fontSize: isSmallScreen ? 14 : 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap:
-                                    _isResendEnabled.value
-                                        ? _sendVerificationEmail
-                                        : null,
-                                child: Text(
-                                  _isResendEnabled.value
-                                      ? 'Resend'
-                                      : '${_secondsRemaining.value}s',
-                                  style: TextStyle(
-                                    fontSize: isSmallScreen ? 14 : 16,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        _isResendEnabled.value
-                                            ? Theme.of(context).primaryColor
-                                            : Colors.grey,
-                                  ),
-                                ),
-                              ),
-                            ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Didn\'t receive the email? ',
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 14 : 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    Obx(
+                      () => GestureDetector(
+                        onTap:
+                            _isResendEnabled.value
+                                ? _sendVerificationEmail
+                                : null,
+                        child: Text(
+                          _isResendEnabled.value
+                              ? 'Resend'
+                              : '${_secondsRemaining.value}s',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 14 : 16,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                _isResendEnabled.value
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.grey,
                           ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Spacer(),
@@ -394,7 +297,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 padding: EdgeInsets.only(bottom: screenHeight * 0.03),
                 child: SizedBox(
                   width: double.infinity,
-                  height: screenHeight * 0.06,
+                  height: screenHeight * 0.07,
                   child: ElevatedButton(
                     onPressed: () async {
                       if (_user != null && _user!.emailVerified) {
@@ -412,20 +315,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             loginData: true,
                             emailId: userCredential.user!.email!,
                           );
-                          _controller.getuserId();
-                          _controller.fetchTransactions(
-                            _controller.userId.value,
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return Transaction();
+                              },
+                            ),
                           );
-                          Get.to(
-                            () => Transaction(),
-                          ); //To To Transactions on verification
                         } on FirebaseAuthException catch (error) {
                           log("My Finance : ERROR :${error.message}");
                           CustomSnackbar.showCustomSnackbar(
                             message: error.code,
                             context: context,
                           );
-                        } // Replace with your route  //To To Transactions on verification
+                        }
+                        Future.delayed(Duration(seconds: 1));
+                        Get.to(() => Transaction()); // Replace with your route
                       } else {
                         _checkEmailVerification();
                       }

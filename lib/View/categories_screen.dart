@@ -527,7 +527,7 @@ class _CategoriesState extends State<Categories> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: CustomDrawer(),
+      drawer: const CustomDrawer(),
       appBar: AppBar(
         elevation: 0,
         title: Text(

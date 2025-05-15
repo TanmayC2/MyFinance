@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_finance1/Contoller/databaseconn/dbhelper.dart';
+import 'package:my_finance1/Contoller/SessionData.dart';
+import 'package:my_finance1/View/verificationemail.dart';
 import 'login_screen.dart';
 import 'dart:developer';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,13 +25,13 @@ class _Regestration extends State {
   final _passwordcontroller = TextEditingController();
   final _emailcontroller = TextEditingController();
   final _confirmpasswordcontroller = TextEditingController();
-  final _usernamecontroller = TextEditingController();
+  final _phonecontroller = TextEditingController();
 
   void clearController() {
     _emailcontroller.clear();
     _passwordcontroller.clear();
     _confirmpasswordcontroller.clear();
-    _usernamecontroller.clear();
+    _phonecontroller.clear();
   }
 
   @override
@@ -39,7 +40,7 @@ class _Regestration extends State {
     _passwordcontroller.dispose();
     _emailcontroller.dispose();
     _confirmpasswordcontroller.dispose();
-    _usernamecontroller.dispose();
+    _phonecontroller.dispose();
   }
 
   void showTermsDialog(BuildContext context) {
@@ -312,27 +313,18 @@ class _Regestration extends State {
                               _confirmpasswordcontroller.text.trim()) {
                             final FirebaseAuth auth = FirebaseAuth.instance;
                             try {
-                              await DatabaseHelper.instance.insertUser(
-                                username: _usernamecontroller.text.trim(),
-                                email: _emailcontroller.text.trim(),
-                              );
                               UserCredential userCredential = await auth
                                   .createUserWithEmailAndPassword(
                                     email: _emailcontroller.text.trim(),
                                     password: _passwordcontroller.text.trim(),
                                   );
-
-                              User? user = auth.currentUser;
-                              if (user != null) {
-                                await user.updateDisplayName(
-                                  _usernamecontroller.text.trim(),
-                                );
-                                await user.reload();
-                              }
-
                               log("USER CREDENTIALS :$userCredential");
-
-                              Get.to(() => Login());
+                              Get.to(
+                                () => VerificationScreen(
+                                  email: _emailcontroller.text.trim(),
+                                  password: _passwordcontroller.text.trim(),
+                                ),
+                              );
                               CustomSnackbar.showCustomSnackbar(
                                 message: "User registered successfully",
                                 context: context,
@@ -446,10 +438,12 @@ class _Regestration extends State {
                           ],
                         ),
                         child: TextField(
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _usernamecontroller,
+                          keyboardType: TextInputType.phone,
+                          controller: _phonecontroller,
                           decoration: const InputDecoration(
-                            hintText: "UserName",
+                            labelText: "Enter Mobile Number",
+                            prefixText: "+91 ",
+                            hintText: "Phone No",
                             border: OutlineInputBorder(
                               borderSide: BorderSide(
                                 color: Color.fromRGBO(0, 0, 0, 0.15),

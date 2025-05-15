@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:my_finance1/Contoller/SessionData.dart';
-import 'package:my_finance1/View/verificationemail.dart';
+//import 'package:get/get_core/src/get_main.dart';
+import 'package:my_finance1/View/transactiongetx.dart';
 import 'package:my_finance1/customwidget.dart';
 import 'register_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -185,10 +187,11 @@ class _Login extends State {
                                 loginData: true,
                                 emailId: userCredential.user!.email!,
                               );
-                              Get.to(
-                                () => VerificationScreen(
-                                  email: _emailcontroller.text.trim(),
-                                  password: _passwordcontroller.text.trim(),
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return Transaction();
+                                  },
                                 ),
                               );
                             } on FirebaseAuthException catch (error) {
@@ -286,7 +289,7 @@ class _ChangePasswordState extends State {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
-      Get.to(() => CPVerificationLinkScreen()); //CP===Chnage Password
+      Get.to(() => VerificationLinkScreen());
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -405,11 +408,11 @@ class PrimaryButton extends StatelessWidget {
 
 //Screen to be redirected when email is sent for change of password
 
-class CPVerificationLinkScreen extends StatelessWidget {
+class VerificationLinkScreen extends StatelessWidget {
   // Controller to manage the verification state
   final VerificationController controller = Get.put(VerificationController());
 
-  CPVerificationLinkScreen({super.key});
+  VerificationLinkScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
