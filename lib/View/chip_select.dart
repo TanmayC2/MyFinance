@@ -7,14 +7,18 @@ class CategoryChoice {
   final String label;
   final String value;
   final Color color;
-  final String categoryImageUrl; // Add this
+  final String categoryImageUrl;
+  final bool isIncome; // Add this property
 
   CategoryChoice({
     required this.label,
     required this.value,
     required this.color,
-    required this.categoryImageUrl, // Add this
+    required this.categoryImageUrl,
+    required this.isIncome, // Add to constructor
   });
+
+  // Remove the getter that returns null
 }
 
 class CategoryManager extends GetxController {
@@ -35,21 +39,19 @@ class CategoryManager extends GetxController {
 
   // Update category choices whenever the Firebase list changes
   void _updateCategoryChoices(List<CategoryModal> firebaseCategories) {
-    // Create a new list from Firebase data
     List<CategoryChoice> updatedChoices =
         firebaseCategories.map((category) {
-          // Convert the color string to a Color object
-          Color categoryColor = _parseColor(category.color);
-
           return CategoryChoice(
             categoryImageUrl: category.categoryImageUrl,
             label: category.name,
-            value: category.name, // Using name as the value, adjust if needed
-            color: categoryColor,
+            value: category.name,
+            color: _parseColor(category.color),
+            isIncome:
+                category.type ==
+                'Income', // Add this based on your CategoryModal
           );
         }).toList();
 
-    // Update the observable list
     categoryChoices.assignAll(updatedChoices);
   }
 
@@ -114,5 +116,13 @@ class CategoryManager extends GetxController {
     }
 
     return color;
+  }
+
+  List<CategoryChoice> getIncomeCategories() {
+    return categoryChoices.where((c) => c.isIncome).toList();
+  }
+
+  List<CategoryChoice> getExpenseCategories() {
+    return categoryChoices.where((c) => !c.isIncome).toList();
   }
 }
